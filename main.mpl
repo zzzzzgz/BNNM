@@ -23,7 +23,6 @@ NEW_BNNM:=module()
         #printf("indets functions:");
         #print(ind_functions);
         local union_ind_fun:=ind_functions union convert(input_table[var],set);
-        #solve the list 解提取的系数的方程组，得到系数解solutions
         f_total:=expand(f_total,op(ind_functions));
         local solutions:=coff_solve(input_table,union_ind_fun,f_total);
         solution_number:=numelems({solutions});
@@ -35,19 +34,18 @@ NEW_BNNM:=module()
             #subs the coefficient into the expression for f,obtain f_coefficient with coefficient relationship
             f_coefficient:=subs(i,f_constructure);
             #preliminary screening here to avoid excessive computation
-            #f_coefficient=0的话直接筛除（如果不筛除会导致后面分母为0报错），不为0则进行接下来的运算
+	    #If f_coefficacy=0, it will be directly filtered out (if not filtered out, it will cause an error if the denominator is 0). 
+	    #If it is not 0, the next operation will be performed
             if simplify(f_coefficient)<>0 then
                 judge_proc(f_coefficient,input_table,i);
                 else
                     flited_uvar++;
                     flited++;
             end if;
-
         end do;
         printf("number of solutions:%d \t flited solutions:%d.\n",solution_number,flited);
         printf("u=0/f=0/miss varibles:%d; have roots:%d; not suitable solution:%d.",flited_uvar,flited_I,flited_notsuit);
         #solutions_proc(solutions,f_constructure);
-        
 
 	end proc:
 
@@ -136,7 +134,7 @@ NEW_BNNM:=module()
        
     end proc:
 
-    # solve the list 提取的系数的方程组
+    # solve the list
     coff_solve:=proc(input_table,ind_functions,f_total)
         local list1:=coeffs(collect(f_total, ind_functions, distributed), ind_functions):#coefficient
         local list2:=remove(has, f_total, ind_functions);#constant
@@ -145,7 +143,10 @@ NEW_BNNM:=module()
         local sol:=solve({list1,list2},varsol,maxsols = 20): #convert(coefficient_name_table,list);
     end proc:
 
-    #主要功能：1.判断误差ferror/uerror；2.筛选解flag_1=0为合格解，=1则筛去;3.将筛选过的解进行接下来的画图模块；4.记录筛选解的数量flited_uvar/flited_I/flited_notsuit分别为u，f=0/含虚根/缺少变量或者函数结构
+    #Main functions: 1. Error/error judgment;Analytical solutions error shoulld be 0.
+    #		     2. If flag_1=0, it is considered a qualified solution, and if=1, it should be filtered out.
+    #		     3. Apply the qualified solutions to the next plotting module;
+    #		     4. Record the number of filtered solution,flited_var->lacks variables or u/flited_I->contains virtual roots/flited_notsuit->dont meet the judge rules.
     judge_proc:=proc(f_coefficient,input_table,coe_solution)
         local vars,flag_1:=0,flag_2,f_value,u_coefficient,u_value,ferror,uerror,uerrorplot,n1,m;
         f_value:=rand_sub(f_coefficient,1);
@@ -192,7 +193,7 @@ NEW_BNNM:=module()
                     flag_1:=1;
                     flited_notsuit++;
                 end if;
-            end if;#有两个x 进行筛选/以上方式多加一个平方项 
+            end if;
         end if;
 
 
@@ -202,7 +203,7 @@ NEW_BNNM:=module()
             print("f with no random coeff:",f_coefficient);
             print("u with no random coeff:",u_coefficient);
             print("coefficient solution:",coe_solution);
-            print(coeffsolword);                                    #带入画图的未定系数解的定值
+            print(coeffsolword);                                   
             # print("The error of f:",ferror,"error of u:",uerror);
             plot_proc(f_value,u_value,input_table);
             print("_______________________");
@@ -213,7 +214,7 @@ NEW_BNNM:=module()
         
     end proc:
 
-    #取随机数带入解f=xxxx中
+    #Take a random number into the solution f=____
     #Taking random numbers into solution f (which is named f_coefficient)
     rand_sub:=proc(f_coefficient,flag_m)
         local ii,rand1,f_randcoeff;
